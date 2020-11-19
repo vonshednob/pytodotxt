@@ -6,14 +6,15 @@ import tempfile
 
 
 class TodoTxt:
-    def __init__(self, filename):
+    def __init__(self, filename, encoding='utf-8'):
         self.filename = pathlib.Path(filename)
+        self.encoding = encoding
         self.tasks = []
 
     def parse(self):
         self.tasks = []
 
-        with open(self.filename, 'rt') as fd:
+        with open(self.filename, 'rt', encoding=self.encoding) as fd:
             for linenr, line in enumerate(fd.readlines()):
                 if len(line.strip()) == 0:
                     continue
@@ -29,18 +30,21 @@ class TodoTxt:
             target = pathlib.Path(target)
         write_to = target
 
+        tmpfile = None
         if safe:
-            tmpfile = tempfile.NamedTemporaryFile(dir=self.filename.parent, delete=False)
+            tmpfile = tempfile.NamedTemporaryFile(dir=self.filename.parent)
             write_to = tmpfile.name
-            tmpfile.close()
 
         with open(write_to, 'wb', buffering=0) as fd:
             lines = [str(task) + '\r\n' for task in
                      sorted(self.tasks, key=lambda t: t.linenr if t.linenr is not None else len(self.tasks))]
-            fd.write(bytes(''.join(lines), 'utf-8'))
+            fd.write(bytes(''.join(lines), self.encoding))
 
         if safe:
             os.replace(write_to, target)
+
+        if tmpfile is not None:
+            tmpfile.close()
 
 
 class Task:
