@@ -32,8 +32,12 @@ class TodoTxt:
 
         tmpfile = None
         if safe:
-            tmpfile = tempfile.NamedTemporaryFile(dir=self.filename.parent)
+            tmpfile = tempfile.NamedTemporaryFile(dir=self.filename.parent,
+                                                  delete=False,
+                                                  prefix=".tmp",
+                                                  suffix="~")
             write_to = tmpfile.name
+            tmpfile.close()
 
         with open(write_to, 'wb', buffering=0) as fd:
             lines = [str(task) + '\r\n' for task in
@@ -43,8 +47,10 @@ class TodoTxt:
         if safe:
             os.replace(write_to, target)
 
-        if tmpfile is not None:
-            tmpfile.close()
+            try:
+                os.unlink(write_to)
+            except OSError:
+                pass
 
 
 class Task:
