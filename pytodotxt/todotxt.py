@@ -183,7 +183,7 @@ class Task:
                 fallback = []
             _, attrname = name.split('_', 1)
             return self.attributes.get(attrname, fallback)
-        return AttributeError(name)
+        raise AttributeError(name)
 
     def parse_attributes(self):
         self._attributes = {}

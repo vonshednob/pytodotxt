@@ -161,6 +161,8 @@ class TestFormats(unittest.TestCase):
         self.assertEqual(len(task.attr_many), 2)
         self.assertEqual(len(task.attr_fancy), 1)
         self.assertEqual(len(task.attr_not_here), 0)
+        with self.assertRaises(AttributeError):
+            _ = task.not_here
 
 
 class TestManipulation(unittest.TestCase):
