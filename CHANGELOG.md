@@ -5,6 +5,14 @@ This file contains the changes made between released versions.
 The format is based on [Keep a changelog](https://keepachangelog.com/) and the versioning tries to follow
 [Semantic Versioning](https://semver.org).
 
+## 1.0.7
+### Fixed
+- Fixed `__getattr__` error (thanks to [sandervoerman](https://github.com/sandervoerman))
+
+## 1.0.6
+### Fixed
+- Fixed regression when saving with "safe-save" option
+
 ## 1.0.5
 ### Fixed
 - Bug when saving files on Windows with non-ansi characters in the path name

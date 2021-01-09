@@ -1,6 +1,7 @@
 recursive-include pytodotxt *.py
 
 include CHANGELOG.md
+include AUTHORS.md
 include LICENSE
 include README.md
 
