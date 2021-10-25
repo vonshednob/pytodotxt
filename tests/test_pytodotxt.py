@@ -164,6 +164,10 @@ class TestFormats(unittest.TestCase):
         with self.assertRaises(AttributeError):
             _ = task.not_here
 
+    def test_bare_description(self):
+        task = pytodotxt.Task("(B) 2021-05-12 @computer Task with context and +project that's due:2021-12-30 soon")
+        self.assertEqual(task.bare_description(), "Task with context and that's soon")
+
 
 class TestManipulation(unittest.TestCase):
     def test_remove_project(self):

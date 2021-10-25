@@ -6,12 +6,22 @@ import tempfile
 
 
 class TodoTxt:
+    """Access to a todo.txt file
+    
+    Common use::
+
+        todotxt = TodoTxt("todo.txt")
+        todotxt.parse()
+
+    Use the ``tasks`` property to access the parsed entries.
+    """
     def __init__(self, filename, encoding='utf-8'):
         self.filename = pathlib.Path(filename)
         self.encoding = encoding
         self.tasks = []
 
     def parse(self):
+        """(Re)parse the todo.txt file"""
         self.tasks = []
 
         with open(self.filename, 'rt', encoding=self.encoding) as fd:
@@ -24,6 +34,17 @@ class TodoTxt:
         return self.tasks
 
     def save(self, target=None, safe=True):
+        """Save all tasks to disk
+
+        If ``target`` is not provided, the ``filename`` property is being
+        used as the target file to save to.
+
+        If ``safe`` is set (the default), the file will first be written to
+        a temporary file in the same folder as the target file and after the
+        successful write to disk, it will be moved in place of ``target``.
+        This can cause trouble though with folders that are synchronised to
+        some cloud storage.
+        """
         if target is None:
             target = self.filename
         else:
@@ -54,6 +75,23 @@ class TodoTxt:
 
 
 class Task:
+    """A task of a todo.txt file
+
+    The usual way to create a task is to create it from an initial string::
+
+        task = Task("(B) some task")
+
+    or::
+
+        task = Task()
+        task.parse("(B) some task")
+
+    The inverse operation to parsing is to convert the task to a string::
+
+        task = Task("(B) some task")
+        assert str(task) == "(B) some task"
+
+    """
     COMPLETED_RE = re.compile(r'^x\s+')
     PRIORITY_RE = re.compile(r'^\s*\(([A-Z]+)\)')
     PROJECT_RE = re.compile(r'(\s+|^)\+([^\s]+)')
@@ -63,14 +101,19 @@ class Task:
     DATE_FMT = '%Y-%m-%d'
 
     def __init__(self, line=None, linenr=None, todotxt=None):
+        """Create a new task
+
+        ``line`` is the raw string representation (one line of a todo.txt file).
+        ``linenr`` is the line number within the ``todotxt`` file, if any.
+        """
         self.description = None
         self.is_completed = None
         self.priority = None
         self.completion_date = None
         self.creation_date = None
         self.linenr = linenr
-        self.raw = None
         self.todotxt = todotxt
+        self._raw = None
         self._attributes = None
 
         if len(line.strip()) > 0:
@@ -152,16 +195,32 @@ class Task:
         return False
 
     def add_project(self, project):
-        self.description += ' +' + project
+        self.append('+' + project)
         self.parse(str(self))
 
     def add_context(self, context):
-        self.description += ' @' + context
+        self.append('@' + context)
         self.parse(str(self))
 
     def add_attribute(self, key, value):
-        self.description += f' {key}:{value}'
+        self.append(f'{key}:{value}')
         self.parse(str(self))
+
+    def append(self, text, add_space=True):
+        if self.description is None:
+            self.description = text
+        else:
+            if add_space and not self.description.endswith(' '):
+                self.description += ' '
+            self.description += text
+
+    def bare_description(self):
+        """The description of the task without contexts, projects or any other attributes"""
+        if self.description is None:
+            return ''
+
+        return ' '.join([part for part in self.description.split(' ')
+                         if len(part) > 0 and part[0] not in '@+' and ':' not in part])
 
     @property
     def projects(self):
@@ -217,7 +276,12 @@ class Task:
         return line
 
     def parse(self, line):
-        self.raw = line
+        """(Re)parse the task
+
+        ``line`` is the raw string representation of a task, i.e. one line 
+        of a todo.txt file.
+        """
+        self._raw = line
         line = line.strip()
 
         # completed or not
@@ -240,6 +304,7 @@ class Task:
         self.parse_attributes()
 
     def __str__(self):
+        """The todo.txt compatible representation of this task."""
         result = ''
         if self.is_completed:
             result += 'x '

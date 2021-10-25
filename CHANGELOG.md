@@ -5,6 +5,13 @@ This file contains the changes made between released versions.
 The format is based on [Keep a changelog](https://keepachangelog.com/) and the versioning tries to follow
 [Semantic Versioning](https://semver.org).
 
+## 1.1.0
+### Fixed
+- A task that had no description used to crash pytodotxt when attempting to add an attribute (or a context or a project)
+
+### Added
+- `bare_description` function of `Task` to get the description without any properties or contexts/projects ([#2](https://github.com/vonshednob/pytodotxt/issues/2))
+
 ## 1.0.7
 ### Fixed
 - Fixed `__getattr__` error (thanks to [sandervoerman](https://github.com/sandervoerman))
