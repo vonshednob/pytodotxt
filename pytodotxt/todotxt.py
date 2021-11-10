@@ -61,7 +61,7 @@ class TodoTxt:
             tmpfile.close()
 
         with open(write_to, 'wb', buffering=0) as fd:
-            lines = [str(task) + '\r\n' for task in
+            lines = [str(task) + os.linesep for task in
                      sorted(self.tasks, key=lambda t: t.linenr if t.linenr is not None else len(self.tasks))]
             fd.write(bytes(''.join(lines), self.encoding))
 
