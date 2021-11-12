@@ -18,14 +18,28 @@ class TodoTxt:
     def __init__(self, filename, encoding='utf-8'):
         self.filename = pathlib.Path(filename)
         self.encoding = encoding
+        self.linesep = os.linesep
         self.tasks = []
 
     def parse(self):
         """(Re)parse the todo.txt file"""
         self.tasks = []
 
-        with open(self.filename, 'rt', encoding=self.encoding) as fd:
-            for linenr, line in enumerate(fd.readlines()):
+        # process task lines of file
+        with open(self.filename, 'rtU', encoding=self.encoding) as fd:
+            lines = fd.readlines()
+
+            # remember newline separator
+            if type(fd.newlines) == str:
+                self.linesep = fd.newlines
+            # handle the case when multiple newline separators are detected
+            elif type(fd.newlines) == tuple:
+                # use the system default newline separator
+                self.linesep = os.linesep
+                # the alternative would be to remember the first newline separator that has been detected
+                #self.linesep = fd.newlines[0]
+
+            for linenr, line in enumerate(lines):
                 if len(line.strip()) == 0:
                     continue
                 task = Task(line, linenr=linenr, todotxt=self)
@@ -33,7 +47,7 @@ class TodoTxt:
 
         return self.tasks
 
-    def save(self, target=None, safe=True, linesep=os.linesep):
+    def save(self, target=None, safe=True, linesep=None):
         """Save all tasks to disk
 
         If ``target`` is not provided, the ``filename`` property is being
@@ -62,6 +76,9 @@ class TodoTxt:
                                                   suffix="~")
             write_to = tmpfile.name
             tmpfile.close()
+
+        if linesep is None:
+            linesep = self.linesep
 
         with open(write_to, 'wb', buffering=0) as fd:
             lines = [str(task) + linesep for task in
