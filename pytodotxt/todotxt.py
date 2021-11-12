@@ -33,7 +33,7 @@ class TodoTxt:
 
         return self.tasks
 
-    def save(self, target=None, safe=True):
+    def save(self, target=None, safe=True, linesep=os.linesep):
         """Save all tasks to disk
 
         If ``target`` is not provided, the ``filename`` property is being
@@ -44,6 +44,9 @@ class TodoTxt:
         successful write to disk, it will be moved in place of ``target``.
         This can cause trouble though with folders that are synchronised to
         some cloud storage.
+
+        With ``linesep`` you can specify the line seperator. If it is not set
+        it defaults to the systems default line seperator.
         """
         if target is None:
             target = self.filename
@@ -61,7 +64,7 @@ class TodoTxt:
             tmpfile.close()
 
         with open(write_to, 'wb', buffering=0) as fd:
-            lines = [str(task) + os.linesep for task in
+            lines = [str(task) + linesep for task in
                      sorted(self.tasks, key=lambda t: t.linenr if t.linenr is not None else len(self.tasks))]
             fd.write(bytes(''.join(lines), self.encoding))
 
