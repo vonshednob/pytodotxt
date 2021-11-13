@@ -7,7 +7,7 @@ import tempfile
 
 class TodoTxt:
     """Access to a todo.txt file
-    
+
     Common use::
 
         todotxt = TodoTxt("todo.txt")
@@ -157,9 +157,9 @@ class Task:
             for match in self.parse_tags(Task.KEYVALUE_RE):
                 if key != match.group(2):
                     continue
-                
+
                 key_found = True
-                
+
                 if value is None or match.group(3) == value:
                     start, end = match.span()
                     self.description = self.description[:start]
@@ -285,7 +285,7 @@ class Task:
                 matches.append(match)
             else:
                 break
-        return matches 
+        return matches
 
     def parse_priority(self, line):
         self.priority = None
@@ -298,7 +298,7 @@ class Task:
     def parse(self, line):
         """(Re)parse the task
 
-        ``line`` is the raw string representation of a task, i.e. one line 
+        ``line`` is the raw string representation of a task, i.e. one line
         of a todo.txt file.
         """
         self._raw = line
@@ -310,7 +310,7 @@ class Task:
         if match:
             # strip the leading mark
             line = line[match.span()[1]:]
-        
+
         if self.is_completed:
             line, self.completion_date = match_date(line)
 
@@ -356,4 +356,3 @@ def match_date(line):
 
 def parse_date(text):
     return datetime.datetime.strptime(text, Task.DATE_FMT).date()
-
