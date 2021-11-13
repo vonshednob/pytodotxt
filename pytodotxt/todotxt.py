@@ -26,7 +26,7 @@ class TodoTxt:
         self.tasks = []
 
         # process task lines of file
-        with open(self.filename, 'rtU', encoding=self.encoding) as fd:
+        with open(self.filename, 'rt', encoding=self.encoding) as fd:
             lines = fd.readlines()
 
             # remember newline separator
