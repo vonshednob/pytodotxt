@@ -34,10 +34,14 @@ class TodoTxt:
                 self.linesep = fd.newlines
             # handle the case when multiple newline separators are detected
             elif isinstance(fd.newlines, tuple):
-                # use the system default newline separator
-                self.linesep = os.linesep
-                # the alternative would be to remember the first newline separator that has been detected
-                #self.linesep = fd.newlines[0]
+                # when the OS newline seperator has been used in the source file
+                if os.linesep in fd.newlines:
+                    # use the system default newline separator
+                    self.linesep = os.linesep
+                # otherwise if the newline seperator of the OS has not been used in the source file but other ones
+                else:
+                    # use the first found newline separator
+                    self.linesep = fd.newlines[0]
 
             for linenr, line in enumerate(lines):
                 if len(line.strip()) == 0:
