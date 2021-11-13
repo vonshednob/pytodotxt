@@ -30,10 +30,10 @@ class TodoTxt:
             lines = fd.readlines()
 
             # remember newline separator
-            if type(fd.newlines) == str:
+            if isinstance(fd.newlines, str):
                 self.linesep = fd.newlines
             # handle the case when multiple newline separators are detected
-            elif type(fd.newlines) == tuple:
+            elif isinstance(fd.newlines, tuple):
                 # use the system default newline separator
                 self.linesep = os.linesep
                 # the alternative would be to remember the first newline separator that has been detected
