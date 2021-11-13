@@ -43,6 +43,7 @@ class TodoTxt:
                     # use the first found newline separator
                     self.linesep = fd.newlines[0]
 
+            # read lines and parse them as tasks
             for linenr, line in enumerate(lines):
                 if len(line.strip()) == 0:
                     continue
