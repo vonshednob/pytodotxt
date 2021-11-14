@@ -16,7 +16,7 @@ setuptools.setup(
     description="Library to access todo.txt like task lists",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://git.spacepanda.se/bold-kitty/pytodotxt",
+    url="https://github.com/vonshednob/pytodotxt",
     author="R",
     author_email="devel+pytodotxt@kakaomilchkuh.de",
     packages=['pytodotxt'],

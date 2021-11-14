@@ -5,6 +5,11 @@ This file contains the changes made between released versions.
 The format is based on [Keep a changelog](https://keepachangelog.com/) and the versioning tries to follow
 [Semantic Versioning](https://semver.org).
 
+## 1.2.0
+### Added
+- Detection of line ending when loading todo.txt files ([#3](https://github.com/vonshednob/pytodotxt/issues/3), thanks to [chaotika](https://github.com/chaotika))
+- Configurable line ending when saving todo.txt files (thanks to [chaotika](https://github.com/chaotika))
+
 ## 1.1.0
 ### Fixed
 - A task that had no description used to crash pytodotxt when attempting to add an attribute (or a context or a project)
