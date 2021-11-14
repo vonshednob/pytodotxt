@@ -12,5 +12,4 @@ Contributers
 Thanks goes to these individuals for their contribution:
 
  - Sander Voerman (https://github.com/sandervoerman)
-
-
+ - Markus Katharina Brechtel (https://github.com/chaotika)

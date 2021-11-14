@@ -7,7 +7,7 @@ import tempfile
 
 class TodoTxt:
     """Access to a todo.txt file
-    
+
     Common use::
 
         todotxt = TodoTxt("todo.txt")
@@ -18,14 +18,33 @@ class TodoTxt:
     def __init__(self, filename, encoding='utf-8'):
         self.filename = pathlib.Path(filename)
         self.encoding = encoding
+        self.linesep = os.linesep
         self.tasks = []
 
     def parse(self):
         """(Re)parse the todo.txt file"""
         self.tasks = []
 
+        # process task lines of file
         with open(self.filename, 'rt', encoding=self.encoding) as fd:
-            for linenr, line in enumerate(fd.readlines()):
+            lines = fd.readlines()
+
+            # remember newline separator
+            if isinstance(fd.newlines, str):
+                self.linesep = fd.newlines
+            # handle the case when multiple newline separators are detected
+            elif isinstance(fd.newlines, tuple):
+                # when the OS newline seperator has been used in the source file
+                if os.linesep in fd.newlines:
+                    # use the system default newline separator
+                    self.linesep = os.linesep
+                # otherwise if the newline seperator of the OS has not been used in the source file but other ones
+                else:
+                    # use the first found newline separator
+                    self.linesep = fd.newlines[0]
+
+            # read lines and parse them as tasks
+            for linenr, line in enumerate(lines):
                 if len(line.strip()) == 0:
                     continue
                 task = Task(line, linenr=linenr, todotxt=self)
@@ -33,7 +52,7 @@ class TodoTxt:
 
         return self.tasks
 
-    def save(self, target=None, safe=True):
+    def save(self, target=None, safe=True, linesep=None):
         """Save all tasks to disk
 
         If ``target`` is not provided, the ``filename`` property is being
@@ -44,6 +63,9 @@ class TodoTxt:
         successful write to disk, it will be moved in place of ``target``.
         This can cause trouble though with folders that are synchronised to
         some cloud storage.
+
+        With ``linesep`` you can specify the line seperator. If it is not set
+        it defaults to the systems default line seperator.
         """
         if target is None:
             target = self.filename
@@ -60,8 +82,11 @@ class TodoTxt:
             write_to = tmpfile.name
             tmpfile.close()
 
+        if linesep is None:
+            linesep = self.linesep
+
         with open(write_to, 'wb', buffering=0) as fd:
-            lines = [str(task) + '\r\n' for task in
+            lines = [str(task) + linesep for task in
                      sorted(self.tasks, key=lambda t: t.linenr if t.linenr is not None else len(self.tasks))]
             fd.write(bytes(''.join(lines), self.encoding))
 
@@ -137,9 +162,9 @@ class Task:
             for match in self.parse_tags(Task.KEYVALUE_RE):
                 if key != match.group(2):
                     continue
-                
+
                 key_found = True
-                
+
                 if value is None or match.group(3) == value:
                     start, end = match.span()
                     self.description = self.description[:start]
@@ -265,7 +290,7 @@ class Task:
                 matches.append(match)
             else:
                 break
-        return matches 
+        return matches
 
     def parse_priority(self, line):
         self.priority = None
@@ -278,7 +303,7 @@ class Task:
     def parse(self, line):
         """(Re)parse the task
 
-        ``line`` is the raw string representation of a task, i.e. one line 
+        ``line`` is the raw string representation of a task, i.e. one line
         of a todo.txt file.
         """
         self._raw = line
@@ -290,7 +315,7 @@ class Task:
         if match:
             # strip the leading mark
             line = line[match.span()[1]:]
-        
+
         if self.is_completed:
             line, self.completion_date = match_date(line)
 
@@ -336,4 +361,3 @@ def match_date(line):
 
 def parse_date(text):
     return datetime.datetime.strptime(text, Task.DATE_FMT).date()
-
