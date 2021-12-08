@@ -5,6 +5,10 @@ This file contains the changes made between released versions.
 The format is based on [Keep a changelog](https://keepachangelog.com/) and the versioning tries to follow
 [Semantic Versioning](https://semver.org).
 
+## 1.2.1
+### Fixed
+- Fix crash when creating `Task()` without any line content
+
 ## 1.2.0
 ### Added
 - Detection of line ending when loading todo.txt files ([#3](https://github.com/vonshednob/pytodotxt/issues/3), thanks to [chaotika](https://github.com/chaotika))

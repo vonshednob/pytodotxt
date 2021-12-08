@@ -141,7 +141,7 @@ class Task:
         self._raw = None
         self._attributes = None
 
-        if len(line.strip()) > 0:
+        if line is not None and len(line.strip()) > 0:
             self.parse(line)
 
     def remove_project(self, project):

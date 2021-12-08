@@ -5,6 +5,10 @@ import pytodotxt
 
 
 class TestFormats(unittest.TestCase):
+    def test_blank(self):
+        task = pytodotxt.Task()
+        self.assertIsNone(task.description, "")
+
     def test_empty(self):
         task = pytodotxt.Task("")
         self.assertIsNone(task.description, "")
