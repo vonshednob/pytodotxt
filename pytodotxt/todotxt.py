@@ -98,6 +98,9 @@ class TodoTxt:
             except OSError:
                 pass
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}(filename="{self.filename}")'
+
 
 class Task:
     """A task of a todo.txt file
@@ -348,6 +351,9 @@ class Task:
             result += self.description
 
         return result
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({repr(str(self))})'
 
 
 def match_date(line):
