@@ -16,9 +16,9 @@ setuptools.setup(
     description="Library to access todo.txt like task lists",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/vonshednob/pytodotxt",
+    url="https://vonshednob.cc/pytodotxt",
     author="R",
-    author_email="devel+pytodotxt@kakaomilchkuh.de",
+    author_email="contact+pytodotxt@vonshednob.cc",
     packages=['pytodotxt'],
     data_files=[],
     python_requires='>=3.0',
@@ -26,4 +26,3 @@ setuptools.setup(
                  'Intended Audience :: Developers',
                  'License :: OSI Approved :: MIT License',
                  'Programming Language :: Python :: 3',])
-

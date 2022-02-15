@@ -3,13 +3,9 @@ Authors
 
 For the time being, this project is authored by
 
- - Robert Labudda (https://github.com/vonshednob)
+ - Robert Labudda (https://vonshednob.cc/pytodotxt)
 
-
-Contributers
-============
-
-Thanks goes to these individuals for their contribution:
+Gratitude goes to these individuals for their contribution:
 
  - Sander Voerman (https://github.com/sandervoerman)
  - Markus Katharina Brechtel (https://github.com/chaotika)

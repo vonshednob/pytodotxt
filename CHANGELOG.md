@@ -5,6 +5,10 @@ This file contains the changes made between released versions.
 The format is based on [Keep a changelog](https://keepachangelog.com/) and the versioning tries to follow
 [Semantic Versioning](https://semver.org).
 
+## 1.3.0
+### Added
+- `__repr__` for both `Task` and `TodoTxt` added (thanks to [Sean Breckenridge](https://github.com/seanbreckenridge))
+
 ## 1.2.1
 ### Fixed
 - Fix crash when creating `Task()` without any line content
