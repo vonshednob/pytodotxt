@@ -1,4 +1,5 @@
 import datetime
+import tempfile
 import unittest
 
 import pytodotxt
@@ -8,10 +9,12 @@ class TestFormats(unittest.TestCase):
     def test_blank(self):
         task = pytodotxt.Task()
         self.assertIsNone(task.description, "")
+        self.assertEqual(task.bare_description(), "")
 
     def test_empty(self):
         task = pytodotxt.Task("")
         self.assertIsNone(task.description, "")
+        self.assertEqual(task.bare_description(), "")
 
     def test_basic_todo1(self):
         line = "Some task"
@@ -82,6 +85,11 @@ class TestFormats(unittest.TestCase):
     def test_project3(self):
         task = pytodotxt.Task("+project needs to be done")
         self.assertEqual(task.projects, ["project"])
+
+    def test_project4(self):
+        task = pytodotxt.Task("+task")
+        self.assertEqual(task.description, "+task")
+        self.assertEqual(task.bare_description(), "")
 
     def test_priority1(self):
         task = pytodotxt.Task("x (A) task with priority")
@@ -172,6 +180,11 @@ class TestFormats(unittest.TestCase):
         task = pytodotxt.Task("(B) 2021-05-12 @computer Task with context and +project that's due:2021-12-30 soon")
         self.assertEqual(task.bare_description(), "Task with context and that's soon")
 
+    def test_http_attribute(self):
+        task = pytodotxt.Task("a task with a link to remind me +bookmark @home https://example.org/")
+        self.assertEqual(task.attributes, {})
+        self.assertEqual(task.bare_description(), "a task with a link to remind me https://example.org/")
+
 
 class TestManipulation(unittest.TestCase):
     def test_remove_project(self):
@@ -216,6 +229,40 @@ class TestManipulation(unittest.TestCase):
         self.assertIn('fruit', task.attributes)
         self.assertEqual(len(task.attributes['fruit']), 1)
 
+
+class TaskWithRsync(pytodotxt.Task):
+    KEYVALUE_ALLOW = pytodotxt.Task.KEYVALUE_ALLOW.union({"rsync"})
+
+
+class TestSubclass(unittest.TestCase):
+
+    def test_without_subclass_fails(self):
+        task = pytodotxt.Task("sync with rsync://my.nas")
+        self.assertEqual(task.bare_description(), "sync with")
+        # 'fails' to detect rsync since its not in the allowed attrs
+        self.assertEqual(task.attributes, {"rsync": ["//my.nas"]})
+
+    def test_with_subclass_succeeds(self):
+        task = TaskWithRsync("sync with rsync://my.nas")
+        self.assertEqual(task.attributes, {})
+        self.assertEqual(task.bare_description(), "sync with rsync://my.nas")
+
+    def test_todotxt_with_subclass(self):
+        with tempfile.NamedTemporaryFile() as tf:
+            with open(tf.name, "w") as f:
+                f.write("sync with rsync://my.nas\n")
+
+            # shouldnt detect rsync
+            txtfile_base = pytodotxt.TodoTxt(tf.name)
+            task_base = txtfile_base.parse()[0]
+            self.assertEqual(task_base.bare_description(), "sync with")
+            self.assertEqual(task_base.attributes, {"rsync": ["//my.nas"]})
+
+            # parse each Task in the file w/ TaskWithRsync
+            txtfile_rsync = pytodotxt.TodoTxt(tf.name, task_class=TaskWithRsync)
+            task_rsync = txtfile_rsync.parse()[0]
+            self.assertEqual(task_rsync.bare_description(), "sync with rsync://my.nas")
+            self.assertEqual(task_rsync.attributes, {})
 
 if __name__ == '__main__':
     unittest.main()
