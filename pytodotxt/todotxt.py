@@ -15,10 +15,11 @@ class TodoTxt:
 
     Use the ``tasks`` property to access the parsed entries.
     """
-    def __init__(self, filename, encoding='utf-8'):
+    def __init__(self, filename, encoding='utf-8', task_class=None):
         self.filename = pathlib.Path(filename)
         self.encoding = encoding
         self.linesep = os.linesep
+        self.task_class = Task if task_class is None else task_class
         self.tasks = []
 
     def parse(self):
@@ -47,7 +48,7 @@ class TodoTxt:
             for linenr, line in enumerate(lines):
                 if len(line.strip()) == 0:
                     continue
-                task = Task(line, linenr=linenr, todotxt=self)
+                task = self.task_class(line, linenr=linenr, todotxt=self)
                 self.tasks.append(task)
 
         return self.tasks
@@ -127,6 +128,7 @@ class Task:
     KEYVALUE_RE = re.compile(r'(\s+|^)([^\s]+):([^\s$]+)')
     DATE_RE = re.compile(r'^\s*([\d]{4}-[\d]{2}-[\d]{2})', re.ASCII)
     DATE_FMT = '%Y-%m-%d'
+    KEYVALUE_ALLOW = set(['http', 'https', 'mailto', 'ssh', 'ftp'])
 
     def __init__(self, line=None, linenr=None, todotxt=None):
         """Create a new task
@@ -148,10 +150,10 @@ class Task:
             self.parse(line)
 
     def remove_project(self, project):
-        return self.remove_tag(project, Task.PROJECT_RE)
+        return self.remove_tag(project, self.__class__.PROJECT_RE)
 
     def remove_context(self, context):
-        return self.remove_tag(context, Task.CONTEXT_RE)
+        return self.remove_tag(context, self.__class__.CONTEXT_RE)
 
     def remove_attribute(self, key, value=None):
         """Remove attribute `key` from the task
@@ -162,7 +164,7 @@ class Task:
         while True:
             key_found = False
 
-            for match in self.parse_tags(Task.KEYVALUE_RE):
+            for match in self.parse_tags(self.__class__.KEYVALUE_RE):
                 if key != match.group(2):
                     continue
 
@@ -192,7 +194,7 @@ class Task:
 
     def replace_attribute(self, key, value, newvalue):
         """Replace the value of key:value in place with key:newvalue"""
-        for match in self.parse_tags(Task.KEYVALUE_RE):
+        for match in self.parse_tags(self.__class__.KEYVALUE_RE):
             if key != match.group(2) or value != match.group(3):
                 continue
 
@@ -206,11 +208,11 @@ class Task:
 
     def replace_context(self, context, newcontext):
         """Replace the first occurrence of @context with @newcontext"""
-        return self.replace_tag(context, newcontext, Task.CONTEXT_RE)
+        return self.replace_tag(context, newcontext, self.__class__.CONTEXT_RE)
 
     def replace_project(self, project, newproject):
         """Replace the first occurrence of @project with @newproject"""
-        return self.replace_tag(project, newproject, Task.PROJECT_RE)
+        return self.replace_tag(project, newproject, self.__class__.PROJECT_RE)
 
     def replace_tag(self, value, newvalue, regex):
         for match in self.parse_tags(regex):
@@ -247,16 +249,27 @@ class Task:
         if self.description is None:
             return ''
 
-        return ' '.join([part for part in self.description.split(' ')
-                         if len(part) > 0 and part[0] not in '@+' and ':' not in part])
+        parts = []
+        for part in self.description.split(' '):
+            if len(part) == 0 or part[0] in '@+':
+                continue
+            # make sure attributes with keys in KEYVALUE_ALLOW are included in bare description
+            elif ':' in part:
+                attrribute_key = part[:part.index(":")]
+                if attrribute_key.lower() in self.__class__.KEYVALUE_ALLOW:
+                    parts.append(part)
+            else:
+                parts.append(part)
+
+        return ' '.join(parts)
 
     @property
     def projects(self):
-        return [match.group(2) for match in self.parse_tags(Task.PROJECT_RE)]
+        return [match.group(2) for match in self.parse_tags(self.__class__.PROJECT_RE)]
 
     @property
     def contexts(self):
-        return [match.group(2) for match in self.parse_tags(Task.CONTEXT_RE)]
+        return [match.group(2) for match in self.parse_tags(self.__class__.CONTEXT_RE)]
 
     @property
     def attributes(self):
@@ -274,10 +287,10 @@ class Task:
 
     def parse_attributes(self):
         self._attributes = {}
-        for match in self.parse_tags(Task.KEYVALUE_RE):
+        for match in self.parse_tags(self.__class__.KEYVALUE_RE):
             key = match.group(2)
             value = match.group(3)
-            if key in ['http', 'https', 'mailto', 'ssh', 'ftp']:
+            if key.lower() in self.__class__.KEYVALUE_ALLOW:
                 continue
             if key not in self._attributes:
                 self._attributes[key] = []
@@ -297,11 +310,24 @@ class Task:
 
     def parse_priority(self, line):
         self.priority = None
-        match = Task.PRIORITY_RE.match(line)
+        match = self.__class__.PRIORITY_RE.match(line)
         if match:
             self.priority = match.group(1)
             line = line[match.span()[1]:]
         return line
+
+    @classmethod
+    def match_date(cls, line):
+        match = cls.DATE_RE.match(line)
+        date = None
+        if match:
+            date = cls.parse_date(match.group(1))
+            line = line[match.span()[1]:]
+        return line, date
+
+    @classmethod
+    def parse_date(cls, text):
+        return datetime.datetime.strptime(text, cls.DATE_FMT).date()
 
     def parse(self, line):
         """(Re)parse the task
@@ -313,17 +339,17 @@ class Task:
         line = line.strip()
 
         # completed or not
-        match = Task.COMPLETED_RE.match(line)
+        match = self.__class__.COMPLETED_RE.match(line)
         self.is_completed = match is not None
         if match:
             # strip the leading mark
             line = line[match.span()[1]:]
 
         if self.is_completed:
-            line, self.completion_date = match_date(line)
+            line, self.completion_date = self.__class__.match_date(line)
 
         line = self.parse_priority(line)
-        line, self.creation_date = match_date(line)
+        line, self.creation_date = self.__class__.match_date(line)
 
         # description
         if len(line) > 0:
@@ -338,14 +364,14 @@ class Task:
             result += 'x '
 
             if self.completion_date is not None:
-                result += self.completion_date.strftime(Task.DATE_FMT) + ' '
+                result += self.completion_date.strftime(self.__class__.DATE_FMT) + ' '
 
         if self.priority:
             if not self.is_completed:
                 result += f'({self.priority}) '
 
         if self.creation_date is not None:
-            result += self.creation_date.strftime(Task.DATE_FMT) + ' '
+            result += self.creation_date.strftime(self.__class__.DATE_FMT) + ' '
 
         if self.description:
             result += self.description
@@ -356,14 +382,6 @@ class Task:
         return f'{self.__class__.__name__}({repr(str(self))})'
 
 
-def match_date(line):
-    match = Task.DATE_RE.match(line)
-    date = None
-    if match:
-        date = parse_date(match.group(1))
-        line = line[match.span()[1]:]
-    return line, date
-
-
-def parse_date(text):
-    return datetime.datetime.strptime(text, Task.DATE_FMT).date()
+# for backwards compatability
+match_date = Task.match_date
+parse_date = Task.parse_date
