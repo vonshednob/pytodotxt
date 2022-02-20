@@ -13,6 +13,11 @@ and install the program.
 That’s all there is to do.
 
 
+## Documentation
+
+You can find the full documentation at <https://vonshednob.cc/pytodotxt/doc/>.
+
+
 ## Example usage
 
 Here’s an example how to open a todo.txt file and print the description of all

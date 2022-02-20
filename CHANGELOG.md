@@ -5,6 +5,15 @@ This file contains the changes made between released versions.
 The format is based on [Keep a changelog](https://keepachangelog.com/) and the versioning tries to follow
 [Semantic Versioning](https://semver.org).
 
+## 1.4.0
+### Fixed
+- `Task` would add the completion date to its `str` representation of a completed task even if there was no creation date set
+
+### Added
+- `TodoTxtParser` to make the parsing of a `todo.txt` file extendable
+- `TodoTxt.write_to_stream` to write to an io stream instead of to disk
+- Documentation. Finally.
+
 ## 1.3.0
 ### Added
 - `__repr__` for both `Task` and `TodoTxt` added (thanks to [Sean Breckenridge](https://github.com/seanbreckenridge))

@@ -1,3 +1,4 @@
 from . import version
-from .todotxt import TodoTxt, Task
+from .todotxt import TodoTxt, TodoTxtParser
+from .task import Task
 

@@ -185,6 +185,18 @@ class TestFormats(unittest.TestCase):
         self.assertEqual(task.attributes, {})
         self.assertEqual(task.bare_description(), "a task with a link to remind me https://example.org/")
 
+    def test_str_parsing(self):
+        parser = pytodotxt.TodoTxtParser()
+        tasks = parser.parse("""one task\r\ntwo tasks\r\nthree tasks\r\n""")
+        self.assertEqual(len(tasks), 3)
+        self.assertEqual(parser.linesep, "\r\n")
+
+    def test_bytes_parsing(self):
+        parser = pytodotxt.TodoTxtParser()
+        tasks = parser.parse(bytes("""one task\rtwo tasks\rthree tasks\r""", 'ascii'))
+        self.assertEqual(len(tasks), 3)
+        self.assertEqual(parser.linesep, "\r")
+
 
 class TestManipulation(unittest.TestCase):
     def test_remove_project(self):
@@ -229,6 +241,13 @@ class TestManipulation(unittest.TestCase):
         self.assertIn('fruit', task.attributes)
         self.assertEqual(len(task.attributes['fruit']), 1)
 
+    def test_completion_date(self):
+        task = pytodotxt.Task("odd task")
+        task.is_completed = True
+        task.completion_date = datetime.date.today()
+
+        self.assertEqual('x odd task', str(task))
+
 
 class TaskWithRsync(pytodotxt.Task):
     KEYVALUE_ALLOW = pytodotxt.Task.KEYVALUE_ALLOW.union({"rsync"})
@@ -259,11 +278,12 @@ class TestSubclass(unittest.TestCase):
             self.assertEqual(task_base.attributes, {"rsync": ["//my.nas"]})
 
             # parse each Task in the file w/ TaskWithRsync
-            txtfile_rsync = pytodotxt.TodoTxt(tf.name, task_class=TaskWithRsync)
+            txtfile_rsync = pytodotxt.TodoTxt(tf.name,
+                                              parser=pytodotxt.TodoTxtParser(task_type=TaskWithRsync))
             task_rsync = txtfile_rsync.parse()[0]
             self.assertEqual(task_rsync.bare_description(), "sync with rsync://my.nas")
             self.assertEqual(task_rsync.attributes, {})
 
+
 if __name__ == '__main__':
     unittest.main()
-

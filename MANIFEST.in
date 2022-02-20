@@ -1,5 +1,10 @@
 recursive-include pytodotxt *.py
 
+recursive-include tests *.py
+recursive-include examples *.py
+
+recursive-include doc *
+
 include CHANGELOG.md
 include AUTHORS.md
 include LICENSE
