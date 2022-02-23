@@ -126,11 +126,15 @@ class TodoTxt:
         """
         if linesep is None:
             linesep = self.linesep
-        stream.write(bytes(linesep.join(self.lines), self.encoding))
+        stream.write(bytes(linesep.join(self.lines) + linesep, self.encoding))
 
     @property
     def lines(self):
-        """Much like ``self.tasks``, but already sorted by linenr and converted to string"""
+        """Convenience access to ``self.build_lines``"""
+        return self.build_lines()
+
+    def build_lines(self):
+        """Returns a list of all tasks converted to string and sorted by linenr"""
         lines = [(task.linenr if task.linenr is not None else len(self.tasks), str(task))
                  for task in self.tasks]
         lines.sort()
