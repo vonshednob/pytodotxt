@@ -1,6 +1,8 @@
 import datetime
 import tempfile
 import unittest
+import os
+from pathlib import Path
 
 import pytodotxt
 
@@ -283,6 +285,39 @@ class TestSubclass(unittest.TestCase):
             task_rsync = txtfile_rsync.parse()[0]
             self.assertEqual(task_rsync.bare_description(), "sync with rsync://my.nas")
             self.assertEqual(task_rsync.attributes, {})
+
+
+class TestEmptyOnDisk(unittest.TestCase):
+    def setUp(self):
+        self.tmpfile = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
+        self.tmpfile.close()
+
+    def tearDown(self):
+        os.unlink(self.tmpfile.name)
+
+    def test_no_content(self):
+        todotxt = pytodotxt.TodoTxt(self.tmpfile.name)
+        self.assertEqual(len(todotxt.tasks), 0)
+
+        todotxt.save()
+        self.assertEqual(Path(self.tmpfile.name).read_text(encoding='utf-8'),
+                         "")
+
+    def test_add_first(self):
+        todotxt = pytodotxt.TodoTxt(self.tmpfile.name)
+        self.assertEqual(len(todotxt.tasks), 0)
+
+        task = pytodotxt.Task("Some task")
+        todotxt.add(task)
+        todotxt.save()
+
+        self.assertEqual(Path(self.tmpfile.name).read_text(encoding="utf-8"),
+                         "Some task" + os.linesep)
+
+    def test_blank_newlines(self):
+        Path(self.tmpfile.name).write_text("\n\n", encoding='utf-8')
+        todotxt = pytodotxt.TodoTxt(self.tmpfile.name)
+        self.assertEqual(len(todotxt.tasks), 0)
 
 
 if __name__ == '__main__':

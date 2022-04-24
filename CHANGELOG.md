@@ -5,6 +5,11 @@ This file contains the changes made between released versions.
 The format is based on [Keep a changelog](https://keepachangelog.com/) and the versioning tries to follow
 [Semantic Versioning](https://semver.org).
 
+## 1.4.2
+### Fixed
+- Saving an empty `TodoTxt` would result in a file with a single newline ([#9](https://github.com/vonshednob/pytodotxt/issues/9))
+
+
 ## 1.4.1
 ### Fixed
 - Missing trailing line separator when serialising a `TodoTxt`
