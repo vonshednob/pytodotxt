@@ -136,8 +136,8 @@ class Task:
                 key_found = True
 
                 if value is None or match.group(3) == value:
-                    start, _ = match.span()
-                    self.description = self.description[:start]
+                    start, end = match.span()
+                    self.description = self.description[:start] + self.description[end:]
                     self.parse(str(self))
                     success = True
 
