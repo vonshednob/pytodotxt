@@ -128,20 +128,14 @@ class Task:
         success = False
         while True:
             key_found = False
-
             for match in self.parse_tags(type(self).KEYVALUE_RE):
-                if key != match.group(2):
-                    continue
-
-                key_found = True
-
-                if value is None or match.group(3) == value:
+                if key == match.group(2) and (value == match.group(3) or value is None):
+                    key_found = True
                     start, end = match.span()
                     self.description = self.description[:start] + self.description[end:]
                     self.parse(str(self))
                     success = True
-
-                break
+                    break
 
             if not key_found:
                 break
