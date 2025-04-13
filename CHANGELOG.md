@@ -5,6 +5,14 @@ This file contains the changes made between released versions.
 The format is based on [Keep a changelog](https://keepachangelog.com/) and the versioning tries to follow
 [Semantic Versioning](https://semver.org).
 
+## 3.0.0
+### Breaking change
+- `TodoTxt.add()` now actually sets the `Task.linenr` property is accordance to the documentation of `Task.linenr`, starting at `0` (thanks to Adam)
+- `TodoTxt.save(target="...", safe=True)` will create the temporary file in the location of the target instead of the location of `self.filename` (which might be read-only or on a different filesystem than the target)
+
+### Fixed
+- License specification in `pyproject.toml` is now a proper SPDX identifier
+
 
 ## 2.0.0
 ### Changed
